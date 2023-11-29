@@ -25,6 +25,7 @@
     "fabricloader": ">=${loaderVersion}",
     "fabric": "*",
     "minecraft": "${minecraftVersion}",
-    "java": ">=17"
+    "java": ">=17",
+    "fabric-language-kotlin": ">=1.10.10+kotlin.1.9.10"
   }
 }

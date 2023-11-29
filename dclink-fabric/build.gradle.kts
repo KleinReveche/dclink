@@ -1,3 +1,10 @@
+val transitiveInclude: Configuration by configurations.creating {
+    // Source - https://gist.github.com/jakobkmar/3c7e68ff57957d647a37ed568e5068c7
+    exclude(group = "com.mojang")
+    exclude(group = "org.jetbrains.kotlin")
+    exclude(group = "org.jetbrains.kotlinx")
+}
+
 plugins {
     alias(libs.plugins.fabric.loom)
 }
@@ -19,15 +26,21 @@ dependencies {
     implementation(project(":dclink-core"))
     include(project(":dclink-core"))
     implementation(project(":dclink-api"))
-    include(project(":dclink-core"))
+    include(project(":dclink-api"))
 
-    include(libs.adventure.api)
-    include(libs.adventure.minimessage)
-    include(libs.configurate.hocon)
-    include(libs.jda) {
+    transitiveInclude(libs.adventure.api)
+    transitiveInclude(libs.adventure.minimessage)
+    transitiveInclude(libs.configurate.hocon)
+    transitiveInclude(libs.jda) {
         exclude(module = "opus-java")
     }
-    include(libs.sqlite)
+    transitiveInclude(libs.sqlite)
+    transitiveInclude(libs.cloud.fabric)
+    transitiveInclude(libs.adventure.fabric)
+
+    transitiveInclude.resolvedConfiguration.resolvedArtifacts.forEach {
+        include(it.moduleVersion.id.toString())
+    }
 }
 
 tasks {
