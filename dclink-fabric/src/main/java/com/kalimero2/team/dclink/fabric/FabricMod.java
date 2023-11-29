@@ -8,6 +8,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.kyori.adventure.platform.fabric.FabricServerAudiences;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.server.players.UserWhiteList;
+import net.minecraft.server.players.UserWhiteListEntry;
 
 public class FabricMod implements DedicatedServerModInitializer {
 
@@ -32,11 +35,17 @@ public class FabricMod implements DedicatedServerModInitializer {
         fabricDCLink.getLogger().info("Registered Commands");
 
         ServerLifecycleEvents.SERVER_STARTING.register(server -> fabricDCLink.setServer(server));
-        ServerPlayConnectionEvents.INIT.register((handler, server) -> {
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayer player = handler.getPlayer();
             DCLink.JoinResult joinResult = fabricDCLink.onLogin(player.getUUID(), player.getGameProfile().getName());
             if (!joinResult.success()) {
                 handler.disconnect(adventure.toNative(joinResult.message()));
+            }
+            PlayerList playerList = server.getPlayerList();
+            UserWhiteList userWhiteList = playerList.getWhiteList();
+            if (!userWhiteList.isWhiteListed(player.getGameProfile()) && playerList.isUsingWhitelist()) {
+                UserWhiteListEntry userWhiteListEntry = new UserWhiteListEntry(player.getGameProfile());
+                userWhiteList.add(userWhiteListEntry);
             }
         });
         ServerLifecycleEvents.SERVER_STARTING.register(server -> this.adventure = FabricServerAudiences.of(server));
